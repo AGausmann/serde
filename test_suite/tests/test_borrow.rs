@@ -146,7 +146,7 @@ fn test_lifetimes() {
 
     #[derive(Deserialize)]
     struct Wrap<'a, 'b> {
-        #[serde(borrow = "'b")]
+        #[serde(borrow = 'b)]
         _cows: Cows<'a, 'b>,
     }
 

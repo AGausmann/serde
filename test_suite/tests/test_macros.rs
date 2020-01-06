@@ -816,7 +816,7 @@ fn test_internally_tagged_bytes() {
             string: String,
         },
         Bytes {
-            #[serde(with = "bytes")]
+            #[serde(with = bytes)]
             bytes: Vec<u8>,
         },
     }
@@ -1565,7 +1565,7 @@ fn test_untagged_bytes() {
             string: String,
         },
         Bytes {
-            #[serde(with = "bytes")]
+            #[serde(with = bytes)]
             bytes: Vec<u8>,
         },
     }

@@ -80,11 +80,11 @@ where
     a1: A,
     #[serde(default)]
     a2: B,
-    #[serde(default = "MyDefault::my_default")]
+    #[serde(default = MyDefault::my_default)]
     a3: C,
     #[serde(skip_deserializing)]
     a4: D,
-    #[serde(skip_deserializing, default = "MyDefault::my_default")]
+    #[serde(skip_deserializing, default = MyDefault::my_default)]
     a5: E,
 }
 
@@ -92,7 +92,7 @@ where
 struct DefaultTupleStruct<A, B, C>(
     A,
     #[serde(default)] B,
-    #[serde(default = "MyDefault::my_default")] C,
+    #[serde(default = MyDefault::my_default)] C,
 )
 where
     C: MyDefault;
@@ -229,11 +229,11 @@ where
         a1: A,
         #[serde(default)]
         a2: B,
-        #[serde(default = "MyDefault::my_default")]
+        #[serde(default = MyDefault::my_default)]
         a3: C,
         #[serde(skip_deserializing)]
         a4: D,
-        #[serde(skip_deserializing, default = "MyDefault::my_default")]
+        #[serde(skip_deserializing, default = MyDefault::my_default)]
         a5: E,
     },
 }
@@ -246,7 +246,7 @@ where
     Tuple(
         A,
         #[serde(default)] B,
-        #[serde(default = "MyDefault::my_default")] C,
+        #[serde(default = MyDefault::my_default)] C,
     ),
 }
 
@@ -344,7 +344,7 @@ impl MyDefault for NoStdDefault {
 
 #[derive(Debug, PartialEq, Deserialize)]
 struct ContainsNoStdDefault<A: MyDefault> {
-    #[serde(default = "MyDefault::my_default")]
+    #[serde(default = MyDefault::my_default)]
     a: A,
 }
 
@@ -419,9 +419,9 @@ struct ContainsNotDeserialize<A, B, C: DeserializeWith, E: MyDefault> {
     a: A,
     #[serde(skip_deserializing, default)]
     b: B,
-    #[serde(deserialize_with = "DeserializeWith::deserialize_with", default)]
+    #[serde(deserialize_with = DeserializeWith::deserialize_with, default)]
     c: C,
-    #[serde(skip_deserializing, default = "MyDefault::my_default")]
+    #[serde(skip_deserializing, default = MyDefault::my_default)]
     e: E,
 }
 
@@ -838,7 +838,7 @@ where
     a: &'a i8,
     #[serde(skip_serializing)]
     b: B,
-    #[serde(skip_serializing_if = "ShouldSkip::should_skip")]
+    #[serde(skip_serializing_if = ShouldSkip::should_skip)]
     c: C,
 }
 
@@ -882,7 +882,7 @@ fn test_skip_serializing_struct() {
 struct SkipSerializingTupleStruct<'a, B, C>(
     &'a i8,
     #[serde(skip_serializing)] B,
-    #[serde(skip_serializing_if = "ShouldSkip::should_skip")] C,
+    #[serde(skip_serializing_if = ShouldSkip::should_skip)] C,
 )
 where
     C: ShouldSkip;
@@ -961,13 +961,13 @@ where
         a: &'a i8,
         #[serde(skip_serializing)]
         _b: B,
-        #[serde(skip_serializing_if = "ShouldSkip::should_skip")]
+        #[serde(skip_serializing_if = ShouldSkip::should_skip)]
         c: C,
     },
     Tuple(
         &'a i8,
         #[serde(skip_serializing)] B,
-        #[serde(skip_serializing_if = "ShouldSkip::should_skip")] C,
+        #[serde(skip_serializing_if = ShouldSkip::should_skip)] C,
     ),
 }
 
@@ -1064,7 +1064,7 @@ where
     b: &'a B,
     #[serde(skip_serializing)]
     c: Option<C>,
-    #[serde(serialize_with = "SerializeWith::serialize_with")]
+    #[serde(serialize_with = SerializeWith::serialize_with)]
     d: D,
 }
 
@@ -1099,7 +1099,7 @@ where
     B: SerializeWith,
 {
     a: &'a i8,
-    #[serde(serialize_with = "SerializeWith::serialize_with")]
+    #[serde(serialize_with = SerializeWith::serialize_with)]
     b: B,
 }
 
@@ -1144,7 +1144,7 @@ where
 {
     Struct {
         a: &'a i8,
-        #[serde(serialize_with = "SerializeWith::serialize_with")]
+        #[serde(serialize_with = SerializeWith::serialize_with)]
         b: B,
     },
 }
@@ -1187,20 +1187,20 @@ fn test_serialize_with_enum() {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 enum WithVariant {
-    #[serde(serialize_with = "serialize_unit_variant_as_i8")]
-    #[serde(deserialize_with = "deserialize_i8_as_unit_variant")]
+    #[serde(serialize_with = serialize_unit_variant_as_i8)]
+    #[serde(deserialize_with = deserialize_i8_as_unit_variant)]
     Unit,
 
-    #[serde(serialize_with = "SerializeWith::serialize_with")]
-    #[serde(deserialize_with = "DeserializeWith::deserialize_with")]
+    #[serde(serialize_with = SerializeWith::serialize_with)]
+    #[serde(deserialize_with = DeserializeWith::deserialize_with)]
     Newtype(i32),
 
-    #[serde(serialize_with = "serialize_variant_as_string")]
-    #[serde(deserialize_with = "deserialize_string_as_variant")]
+    #[serde(serialize_with = serialize_variant_as_string)]
+    #[serde(deserialize_with = deserialize_string_as_variant)]
     Tuple(String, u8),
 
-    #[serde(serialize_with = "serialize_variant_as_string")]
-    #[serde(deserialize_with = "deserialize_string_as_variant")]
+    #[serde(serialize_with = serialize_variant_as_string)]
+    #[serde(deserialize_with = deserialize_string_as_variant)]
     Struct { f1: String, f2: u8 },
 }
 
@@ -1361,7 +1361,7 @@ where
     B: DeserializeWith,
 {
     a: i8,
-    #[serde(deserialize_with = "DeserializeWith::deserialize_with")]
+    #[serde(deserialize_with = DeserializeWith::deserialize_with)]
     b: B,
 }
 
@@ -1405,7 +1405,7 @@ where
 {
     Struct {
         a: i8,
-        #[serde(deserialize_with = "DeserializeWith::deserialize_with")]
+        #[serde(deserialize_with = DeserializeWith::deserialize_with)]
         b: B,
     },
 }
@@ -1538,7 +1538,7 @@ fn test_invalid_length_enum() {
 }
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
-#[serde(into = "EnumToU32", from = "EnumToU32")]
+#[serde(into = EnumToU32, from = EnumToU32)]
 struct StructFromEnum(Option<u32>);
 
 impl Into<EnumToU32> for StructFromEnum {
@@ -1556,7 +1556,7 @@ impl From<EnumToU32> for StructFromEnum {
 }
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
-#[serde(into = "Option<u32>", from = "Option<u32>")]
+#[serde(into = Option<u32>, from = Option<u32>)]
 enum EnumToU32 {
     One,
     Two,
@@ -1590,7 +1590,7 @@ impl From<Option<u32>> for EnumToU32 {
 }
 
 #[derive(Clone, Deserialize, PartialEq, Debug)]
-#[serde(try_from = "u32")]
+#[serde(try_from = u32)]
 enum TryFromU32 {
     One,
     Two,

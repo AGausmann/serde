@@ -35,7 +35,7 @@ fn test_gen() {
     #[derive(Serialize, Deserialize)]
     struct With<T> {
         t: T,
-        #[serde(serialize_with = "ser_x", deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x, deserialize_with = de_x)]
         x: X,
     }
     assert::<With<i32>>();
@@ -43,7 +43,7 @@ fn test_gen() {
     #[derive(Serialize, Deserialize)]
     struct WithTogether<T> {
         t: T,
-        #[serde(with = "both_x")]
+        #[serde(with = both_x)]
         x: X,
     }
     assert::<WithTogether<i32>>();
@@ -52,7 +52,7 @@ fn test_gen() {
     struct WithRef<'a, T: 'a> {
         #[serde(skip_deserializing)]
         t: StdOption<&'a T>,
-        #[serde(serialize_with = "ser_x", deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x, deserialize_with = de_x)]
         x: X,
     }
     assert::<WithRef<i32>>();
@@ -81,14 +81,14 @@ fn test_gen() {
     #[derive(Serialize, Deserialize)]
     enum EnumWith<T> {
         Unit,
-        Newtype(#[serde(serialize_with = "ser_x", deserialize_with = "de_x")] X),
+        Newtype(#[serde(serialize_with = ser_x, deserialize_with = de_x)] X),
         Tuple(
             T,
-            #[serde(serialize_with = "ser_x", deserialize_with = "de_x")] X,
+            #[serde(serialize_with = ser_x, deserialize_with = de_x)] X,
         ),
         Struct {
             t: T,
-            #[serde(serialize_with = "ser_x", deserialize_with = "de_x")]
+            #[serde(serialize_with = ser_x, deserialize_with = de_x)]
             x: X,
         },
     }
@@ -107,13 +107,13 @@ fn test_gen() {
     assert_ser::<MultipleRef<i32>>();
 
     #[derive(Serialize, Deserialize)]
-    struct Newtype(#[serde(serialize_with = "ser_x", deserialize_with = "de_x")] X);
+    struct Newtype(#[serde(serialize_with = ser_x, deserialize_with = de_x)] X);
     assert::<Newtype>();
 
     #[derive(Serialize, Deserialize)]
     struct Tuple<T>(
         T,
-        #[serde(serialize_with = "ser_x", deserialize_with = "de_x")] X,
+        #[serde(serialize_with = ser_x, deserialize_with = de_x)] X,
     );
     assert::<Tuple<i32>>();
 
@@ -170,74 +170,74 @@ fn test_gen() {
     assert_ser::<OptionStatic>();
 
     #[derive(Serialize, Deserialize)]
-    #[serde(bound = "D: SerializeWith + DeserializeWith")]
+    #[serde(bound = D: SerializeWith + DeserializeWith)]
     struct WithTraits1<D, E> {
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            deserialize_with = "DeserializeWith::deserialize_with"
+            serialize_with = SerializeWith::serialize_with,
+            deserialize_with = DeserializeWith::deserialize_with
         )]
         d: D,
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            deserialize_with = "DeserializeWith::deserialize_with",
-            bound = "E: SerializeWith + DeserializeWith"
+            serialize_with = SerializeWith::serialize_with,
+            deserialize_with = DeserializeWith::deserialize_with,
+            bound = E: SerializeWith + DeserializeWith
         )]
         e: E,
     }
     assert::<WithTraits1<X, X>>();
 
     #[derive(Serialize, Deserialize)]
-    #[serde(bound(serialize = "D: SerializeWith", deserialize = "D: DeserializeWith"))]
+    #[serde(bound(serialize = D: SerializeWith, deserialize = D: DeserializeWith))]
     struct WithTraits2<D, E> {
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            deserialize_with = "DeserializeWith::deserialize_with"
+            serialize_with = SerializeWith::serialize_with,
+            deserialize_with = DeserializeWith::deserialize_with
         )]
         d: D,
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            bound(serialize = "E: SerializeWith")
+            serialize_with = SerializeWith::serialize_with,
+            bound(serialize = E: SerializeWith)
         )]
         #[serde(
-            deserialize_with = "DeserializeWith::deserialize_with",
-            bound(deserialize = "E: DeserializeWith")
+            deserialize_with = DeserializeWith::deserialize_with,
+            bound(deserialize = E: DeserializeWith)
         )]
         e: E,
     }
     assert::<WithTraits2<X, X>>();
 
     #[derive(Serialize, Deserialize)]
-    #[serde(bound = "D: SerializeWith + DeserializeWith")]
+    #[serde(bound = D: SerializeWith + DeserializeWith)]
     enum VariantWithTraits1<D, E> {
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            deserialize_with = "DeserializeWith::deserialize_with"
+            serialize_with = SerializeWith::serialize_with,
+            deserialize_with = DeserializeWith::deserialize_with
         )]
         D(D),
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            deserialize_with = "DeserializeWith::deserialize_with",
-            bound = "E: SerializeWith + DeserializeWith"
+            serialize_with = SerializeWith::serialize_with,
+            deserialize_with = DeserializeWith::deserialize_with,
+            bound = E: SerializeWith + DeserializeWith
         )]
         E(E),
     }
     assert::<VariantWithTraits1<X, X>>();
 
     #[derive(Serialize, Deserialize)]
-    #[serde(bound(serialize = "D: SerializeWith", deserialize = "D: DeserializeWith"))]
+    #[serde(bound(serialize = D: SerializeWith, deserialize = D: DeserializeWith))]
     enum VariantWithTraits2<D, E> {
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            deserialize_with = "DeserializeWith::deserialize_with"
+            serialize_with = SerializeWith::serialize_with,
+            deserialize_with = DeserializeWith::deserialize_with
         )]
         D(D),
         #[serde(
-            serialize_with = "SerializeWith::serialize_with",
-            bound(serialize = "E: SerializeWith")
+            serialize_with = SerializeWith::serialize_with,
+            bound(serialize = E: SerializeWith)
         )]
         #[serde(
-            deserialize_with = "DeserializeWith::deserialize_with",
-            bound(deserialize = "E: DeserializeWith")
+            deserialize_with = DeserializeWith::deserialize_with,
+            bound(deserialize = E: DeserializeWith)
         )]
         E(E),
     }
@@ -248,7 +248,7 @@ fn test_gen() {
     assert::<CowStr>();
 
     #[derive(Serialize, Deserialize)]
-    #[serde(bound(deserialize = "T::Owned: DeserializeOwned"))]
+    #[serde(bound(deserialize = T::Owned: DeserializeOwned))]
     struct CowT<'a, T: ?Sized + 'a + ToOwned>(Cow<'a, T>);
     assert::<CowT<str>>();
 
@@ -354,7 +354,7 @@ fn test_gen() {
     }
 
     #[derive(Serialize, Deserialize)]
-    #[serde(untagged, remote = "Or")]
+    #[serde(untagged, remote = Or)]
     enum OrDef<A, B> {
         A(A),
         B(B),
@@ -363,20 +363,20 @@ fn test_gen() {
     struct Str<'a>(&'a str);
 
     #[derive(Serialize, Deserialize)]
-    #[serde(remote = "Str")]
+    #[serde(remote = Str)]
     struct StrDef<'a>(&'a str);
 
     #[derive(Serialize, Deserialize)]
     struct Remote<'a> {
-        #[serde(with = "OrDef")]
+        #[serde(with = OrDef)]
         or: Or<u8, bool>,
-        #[serde(borrow, with = "StrDef")]
+        #[serde(borrow, with = StrDef)]
         s: Str<'a>,
     }
 
     #[derive(Serialize, Deserialize)]
     enum BorrowVariant<'a> {
-        #[serde(borrow, with = "StrDef")]
+        #[serde(borrow, with = StrDef)]
         S(Str<'a>),
     }
 
@@ -386,45 +386,45 @@ fn test_gen() {
         pub struct S;
 
         #[derive(Serialize, Deserialize)]
-        #[serde(remote = "S")]
+        #[serde(remote = S)]
         pub struct SDef;
     }
 
     // This would not work if SDef::serialize / deserialize are private.
     #[derive(Serialize, Deserialize)]
     struct RemoteVisibility {
-        #[serde(with = "vis::SDef")]
+        #[serde(with = vis::SDef)]
         s: vis::S,
     }
 
     #[derive(Serialize, Deserialize)]
-    #[serde(remote = "Self")]
+    #[serde(remote = Self)]
     struct RemoteSelf;
 
     #[derive(Serialize, Deserialize)]
     enum ExternallyTaggedVariantWith {
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Newtype(X),
 
-        #[serde(serialize_with = "serialize_some_other_variant")]
-        #[serde(deserialize_with = "deserialize_some_other_variant")]
+        #[serde(serialize_with = serialize_some_other_variant)]
+        #[serde(deserialize_with = deserialize_some_other_variant)]
         #[allow(dead_code)]
         Tuple(String, u8),
 
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Struct1 { x: X },
 
-        #[serde(serialize_with = "serialize_some_other_variant")]
-        #[serde(deserialize_with = "deserialize_some_other_variant")]
+        #[serde(serialize_with = serialize_some_other_variant)]
+        #[serde(deserialize_with = deserialize_some_other_variant)]
         #[allow(dead_code)]
         Struct { f1: String, f2: u8 },
 
-        #[serde(serialize_with = "serialize_some_unit_variant")]
-        #[serde(deserialize_with = "deserialize_some_unit_variant")]
+        #[serde(serialize_with = serialize_some_unit_variant)]
+        #[serde(deserialize_with = deserialize_some_unit_variant)]
         #[allow(dead_code)]
         Unit,
     }
@@ -433,23 +433,23 @@ fn test_gen() {
     #[derive(Serialize, Deserialize)]
     #[serde(tag = "t")]
     enum InternallyTaggedVariantWith {
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Newtype(X),
 
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Struct1 { x: X },
 
-        #[serde(serialize_with = "serialize_some_other_variant")]
-        #[serde(deserialize_with = "deserialize_some_other_variant")]
+        #[serde(serialize_with = serialize_some_other_variant)]
+        #[serde(deserialize_with = deserialize_some_other_variant)]
         #[allow(dead_code)]
         Struct { f1: String, f2: u8 },
 
-        #[serde(serialize_with = "serialize_some_unit_variant")]
-        #[serde(deserialize_with = "deserialize_some_unit_variant")]
+        #[serde(serialize_with = serialize_some_unit_variant)]
+        #[serde(deserialize_with = deserialize_some_unit_variant)]
         #[allow(dead_code)]
         Unit,
     }
@@ -458,28 +458,28 @@ fn test_gen() {
     #[derive(Serialize, Deserialize)]
     #[serde(tag = "t", content = "c")]
     enum AdjacentlyTaggedVariantWith {
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Newtype(X),
 
-        #[serde(serialize_with = "serialize_some_other_variant")]
-        #[serde(deserialize_with = "deserialize_some_other_variant")]
+        #[serde(serialize_with = serialize_some_other_variant)]
+        #[serde(deserialize_with = deserialize_some_other_variant)]
         #[allow(dead_code)]
         Tuple(String, u8),
 
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Struct1 { x: X },
 
-        #[serde(serialize_with = "serialize_some_other_variant")]
-        #[serde(deserialize_with = "deserialize_some_other_variant")]
+        #[serde(serialize_with = serialize_some_other_variant)]
+        #[serde(deserialize_with = deserialize_some_other_variant)]
         #[allow(dead_code)]
         Struct { f1: String, f2: u8 },
 
-        #[serde(serialize_with = "serialize_some_unit_variant")]
-        #[serde(deserialize_with = "deserialize_some_unit_variant")]
+        #[serde(serialize_with = serialize_some_unit_variant)]
+        #[serde(deserialize_with = deserialize_some_unit_variant)]
         #[allow(dead_code)]
         Unit,
     }
@@ -488,28 +488,28 @@ fn test_gen() {
     #[derive(Serialize, Deserialize)]
     #[serde(untagged)]
     enum UntaggedVariantWith {
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Newtype(X),
 
-        #[serde(serialize_with = "serialize_some_other_variant")]
-        #[serde(deserialize_with = "deserialize_some_other_variant")]
+        #[serde(serialize_with = serialize_some_other_variant)]
+        #[serde(deserialize_with = deserialize_some_other_variant)]
         #[allow(dead_code)]
         Tuple(String, u8),
 
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         #[allow(dead_code)]
         Struct1 { x: X },
 
-        #[serde(serialize_with = "serialize_some_other_variant")]
-        #[serde(deserialize_with = "deserialize_some_other_variant")]
+        #[serde(serialize_with = serialize_some_other_variant)]
+        #[serde(deserialize_with = deserialize_some_other_variant)]
         #[allow(dead_code)]
         Struct { f1: String, f2: u8 },
 
-        #[serde(serialize_with = "serialize_some_unit_variant")]
-        #[serde(deserialize_with = "deserialize_some_unit_variant")]
+        #[serde(serialize_with = serialize_some_unit_variant)]
+        #[serde(deserialize_with = deserialize_some_unit_variant)]
         #[allow(dead_code)]
         Unit,
     }
@@ -517,7 +517,7 @@ fn test_gen() {
 
     #[derive(Serialize, Deserialize)]
     struct FlattenWith {
-        #[serde(flatten, serialize_with = "ser_x", deserialize_with = "de_x")]
+        #[serde(flatten, serialize_with = ser_x, deserialize_with = de_x)]
         x: X,
     }
     assert::<FlattenWith>();
@@ -571,7 +571,7 @@ fn test_gen() {
 
     #[derive(Serialize)]
     struct BigArray {
-        #[serde(serialize_with = "<[_]>::serialize")]
+        #[serde(serialize_with = <[_]>::serialize)]
         array: [u8; 256],
     }
     assert_ser::<BigArray>();
@@ -646,8 +646,8 @@ fn test_gen() {
     #[serde(untagged)]
     enum UntaggedNewtypeVariantWith {
         Newtype(
-            #[serde(serialize_with = "ser_x")]
-            #[serde(deserialize_with = "de_x")]
+            #[serde(serialize_with = ser_x)]
+            #[serde(deserialize_with = de_x)]
             X,
         ),
     }
@@ -655,8 +655,8 @@ fn test_gen() {
     #[derive(Serialize, Deserialize)]
     #[serde(transparent)]
     struct TransparentWith {
-        #[serde(serialize_with = "ser_x")]
-        #[serde(deserialize_with = "de_x")]
+        #[serde(serialize_with = ser_x)]
+        #[serde(deserialize_with = de_x)]
         x: X,
     }
 
@@ -682,7 +682,7 @@ fn test_gen() {
 
     #[derive(Serialize, Deserialize)]
     struct FlattenSkipSerializingIf<T> {
-        #[serde(flatten, skip_serializing_if = "StdOption::is_none")]
+        #[serde(flatten, skip_serializing_if = StdOption::is_none)]
         flat: StdOption<T>,
     }
 
