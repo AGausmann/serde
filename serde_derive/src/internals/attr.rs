@@ -1606,80 +1606,77 @@ fn get_lit_str2(
     }
 }
 
+fn lit_str_or_inline<T: Parse>(input: ParseStream) -> parse::Result<T> {
+    if input.peek(syn::LitStr) {
+        parse_lit_str(&input.parse()?)
+    } else {
+        input.parse()
+    }
+}
+
 fn parse_value_into_path(
     cx: &Ctxt,
-    attr_name: Symbol,
+    _attr_name: Symbol,
     name_value: &MetaNameValue,
 ) -> Result<syn::Path, ()> {
-    let string = get_lit_str(cx, attr_name, name_value)?;
-    parse_lit_str(&string).map_err(|_| {
-        cx.error_spanned_by(
-            &name_value.value,
-            format!("failed to parse path: {:?}", string.value()),
-        )
-    })
+    name_value
+        .parse_value_with(lit_str_or_inline)
+        .map_err(|err| {
+            cx.error_spanned_by(&name_value.value, format!("failed to parse path: {}", err))
+        })
 }
 
 fn parse_value_into_expr_path(
     cx: &Ctxt,
-    attr_name: Symbol,
+    _attr_name: Symbol,
     name_value: &MetaNameValue,
 ) -> Result<syn::ExprPath, ()> {
-    let string = get_lit_str(cx, attr_name, name_value)?;
-    parse_lit_str(&string).map_err(|_| {
-        cx.error_spanned_by(
-            &name_value.value,
-            format!("failed to parse path: {:?}", string.value()),
-        )
-    })
+    name_value
+        .parse_value_with(lit_str_or_inline)
+        .map_err(|err| {
+            cx.error_spanned_by(&name_value.value, format!("failed to parse path: {}", err))
+        })
 }
 
 fn parse_value_into_where(
     cx: &Ctxt,
-    attr_name: Symbol,
-    meta_item_name: Symbol,
+    _attr_name: Symbol,
+    _meta_item_name: Symbol,
     name_value: &MetaNameValue,
 ) -> Result<Vec<syn::WherePredicate>, ()> {
-    let string = get_lit_str2(cx, attr_name, meta_item_name, name_value)?;
-    if string.value().is_empty() {
-        return Ok(Vec::new());
+    struct WhereList(Punctuated<syn::WherePredicate, Token![,]>);
+
+    impl Parse for WhereList {
+        fn parse(input: ParseStream) -> parse::Result<Self> {
+            Punctuated::parse_terminated(input).map(WhereList)
+        }
     }
 
-    let where_string = syn::LitStr::new(&format!("where {}", string.value()), string.span());
-
-    parse_lit_str::<syn::WhereClause>(&where_string)
-        .map(|wh| wh.predicates.into_iter().collect())
+    name_value
+        .parse_value_with(lit_str_or_inline::<WhereList>)
+        .map(|wh| wh.0.into_iter().collect())
         .map_err(|err| cx.error_spanned_by(&name_value.value, err))
 }
 
 fn parse_value_into_ty(
     cx: &Ctxt,
-    attr_name: Symbol,
+    _attr_name: Symbol,
     name_value: &MetaNameValue,
 ) -> Result<syn::Type, ()> {
-    let string = get_lit_str(cx, attr_name, name_value)?;
-
-    parse_lit_str(&string).map_err(|_| {
-        cx.error_spanned_by(
-            &name_value.value,
-            format!("failed to parse type: {} = {:?}", attr_name, string.value()),
-        )
-    })
+    name_value
+        .parse_value_with(lit_str_or_inline)
+        .map_err(|err| {
+            cx.error_spanned_by(&name_value.value, format!("failed to parse type: {}", err))
+        })
 }
 
 // Parses a string literal like "'a + 'b + 'c" containing a nonempty list of
 // lifetimes separated by `+`.
 fn parse_value_into_lifetimes(
     cx: &Ctxt,
-    attr_name: Symbol,
+    _attr_name: Symbol,
     name_value: &MetaNameValue,
 ) -> Result<BTreeSet<syn::Lifetime>, ()> {
-    let string = get_lit_str(cx, attr_name, name_value)?;
-    if string.value().is_empty() {
-        cx.error_spanned_by(&name_value.value, "at least one lifetime must be borrowed");
-        return Err(());
-    }
-
     struct BorrowedLifetimes(Punctuated<syn::Lifetime, Token![+]>);
 
     impl Parse for BorrowedLifetimes {
@@ -1688,24 +1685,25 @@ fn parse_value_into_lifetimes(
         }
     }
 
-    if let Ok(BorrowedLifetimes(lifetimes)) = parse_lit_str(&string) {
-        let mut set = BTreeSet::new();
-        for lifetime in lifetimes {
-            if !set.insert(lifetime.clone()) {
+    let BorrowedLifetimes(lifetimes) =
+        name_value
+            .parse_value_with(lit_str_or_inline)
+            .map_err(|err| {
                 cx.error_spanned_by(
                     &name_value.value,
-                    format!("duplicate borrowed lifetime `{}`", lifetime),
+                    format!("failed to parse borrowed lifetimes: {}", err),
                 );
-            }
+            })?;
+    let mut set = BTreeSet::new();
+    for lifetime in lifetimes {
+        if !set.insert(lifetime.clone()) {
+            cx.error_spanned_by(
+                &name_value.value,
+                format!("duplicate borrowed lifetime `{}`", lifetime),
+            );
         }
-        return Ok(set);
     }
-
-    cx.error_spanned_by(
-        &name_value.value,
-        format!("failed to parse borrowed lifetimes: {:?}", string.value()),
-    );
-    Err(())
+    Ok(set)
 }
 
 fn is_implicitly_borrowed(ty: &syn::Type) -> bool {

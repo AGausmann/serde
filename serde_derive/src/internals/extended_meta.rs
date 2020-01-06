@@ -1,5 +1,5 @@
 use proc_macro2::{TokenStream, TokenTree};
-use syn::parse::{Parse, Result};
+use syn::parse::{Parse, Parser, Result};
 use syn::punctuated::Punctuated;
 use syn::token::{Comma, Eq, Paren};
 use syn::{Lit, Path};
@@ -45,7 +45,11 @@ pub struct MetaNameValue {
 
 impl MetaNameValue {
     pub fn parse_value<T: Parse>(&self) -> Result<T> {
-        syn::parse2(self.value.clone())
+        self.parse_value_with(T::parse)
+    }
+
+    pub fn parse_value_with<F: Parser>(&self, parser: F) -> Result<F::Output> {
+        parser.parse2(self.value.clone())
     }
 }
 
