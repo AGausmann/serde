@@ -9,7 +9,7 @@ use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::str::FromStr;
 use syn;
-use syn::parse::{self, Parse, ParseStream};
+use syn::parse::{self, Parse, ParseBuffer, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::Ident;
 
@@ -1606,8 +1606,15 @@ fn get_lit_str2(
     }
 }
 
-fn lit_str_or_inline<T: Parse>(input: ParseStream) -> parse::Result<T> {
+fn lit_str_or_inline<'a, 'b, T: Parse>(_cx: &'a Ctxt, input: &'b ParseBuffer) -> parse::Result<T> {
     if input.peek(syn::LitStr) {
+        //TODO deprecate
+        /*
+        cx.error_spanned_by(
+            input.cursor().token_stream(),
+            "support for string literals is deprecated and will be removed in a future release",
+        );
+        */
         parse_lit_str(&input.parse()?)
     } else {
         input.parse()
@@ -1620,7 +1627,7 @@ fn parse_value_into_path(
     name_value: &MetaNameValue,
 ) -> Result<syn::Path, ()> {
     name_value
-        .parse_value_with(lit_str_or_inline)
+        .parse_value_with(|input: ParseStream| lit_str_or_inline(cx, input))
         .map_err(|err| {
             cx.error_spanned_by(&name_value.value, format!("failed to parse path: {}", err))
         })
@@ -1632,7 +1639,7 @@ fn parse_value_into_expr_path(
     name_value: &MetaNameValue,
 ) -> Result<syn::ExprPath, ()> {
     name_value
-        .parse_value_with(lit_str_or_inline)
+        .parse_value_with(|input: ParseStream| lit_str_or_inline(cx, input))
         .map_err(|err| {
             cx.error_spanned_by(&name_value.value, format!("failed to parse path: {}", err))
         })
@@ -1653,7 +1660,7 @@ fn parse_value_into_where(
     }
 
     name_value
-        .parse_value_with(lit_str_or_inline::<WhereList>)
+        .parse_value_with(|input: ParseStream| lit_str_or_inline::<WhereList>(cx, input))
         .map(|wh| wh.0.into_iter().collect())
         .map_err(|err| cx.error_spanned_by(&name_value.value, err))
 }
@@ -1664,7 +1671,7 @@ fn parse_value_into_ty(
     name_value: &MetaNameValue,
 ) -> Result<syn::Type, ()> {
     name_value
-        .parse_value_with(lit_str_or_inline)
+        .parse_value_with(|input: ParseStream| lit_str_or_inline(cx, input))
         .map_err(|err| {
             cx.error_spanned_by(&name_value.value, format!("failed to parse type: {}", err))
         })
@@ -1685,15 +1692,14 @@ fn parse_value_into_lifetimes(
         }
     }
 
-    let BorrowedLifetimes(lifetimes) =
-        name_value
-            .parse_value_with(lit_str_or_inline)
-            .map_err(|err| {
-                cx.error_spanned_by(
-                    &name_value.value,
-                    format!("failed to parse borrowed lifetimes: {}", err),
-                );
-            })?;
+    let BorrowedLifetimes(lifetimes) = name_value
+        .parse_value_with(|input: ParseStream| lit_str_or_inline(cx, input))
+        .map_err(|err| {
+            cx.error_spanned_by(
+                &name_value.value,
+                format!("failed to parse borrowed lifetimes: {}", err),
+            );
+        })?;
     let mut set = BTreeSet::new();
     for lifetime in lifetimes {
         if !set.insert(lifetime.clone()) {
