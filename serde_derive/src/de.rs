@@ -1643,14 +1643,16 @@ fn deserialize_untagged_enum(
 
     quote_block! {
         let __content = try!(<_serde::private::de::Content as _serde::Deserialize>::deserialize(__deserializer));
+        let mut __error_buffer = String::new();
 
         #(
-            if let _serde::export::Ok(__ok) = #attempts {
-                return _serde::export::Ok(__ok);
+            match #attempts {
+                _serde::export::Ok(__ok) => return _serde::export::Ok(__ok),
+                _serde::export::Err(__err) => __error_buffer.push_str(&format!("\n - {}", __err)),
             }
         )*
 
-        _serde::export::Err(_serde::de::Error::custom(#fallthrough_msg))
+        _serde::export::Err(_serde::de::Error::custom(format!("{}{}", #fallthrough_msg, __error_buffer)))
     }
 }
 
