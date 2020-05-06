@@ -14,6 +14,7 @@ pub fn check(cx: &Ctxt, cont: &mut Container, derive: Derive) {
     check_adjacent_tag_conflict(cx, cont);
     check_transparent(cx, cont, derive);
     check_from_and_try_from(cx, cont);
+    check_unique_default_variant(cx, cont);
 }
 
 /// Getters are only allowed inside structs (not enums) with the `remote`
@@ -415,6 +416,26 @@ fn check_from_and_try_from(cx: &Ctxt, cont: &mut Container) {
         cx.error_spanned_by(
             cont.original,
             "#[serde(from = \"...\")] and #[serde(try_from = \"...\")] conflict with each other",
+        );
+    }
+}
+
+/// Every enum may have at most one variant with `#[serde(default)]` specified.
+fn check_unique_default_variant(cx: &Ctxt, cont: &Container) {
+    let variants = match &cont.data {
+        Data::Enum(variants) => variants,
+        Data::Struct(_, _) => {
+            return;
+        }
+    };
+    let default_variant_count = variants
+        .iter()
+        .filter(|variant| variant.attrs.default())
+        .count();
+    if default_variant_count > 1 {
+        cx.error_spanned_by(
+            cont.original,
+            "#[serde(default)] can only be applied to a single enum variant",
         );
     }
 }
