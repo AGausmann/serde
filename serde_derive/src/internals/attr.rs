@@ -831,6 +831,7 @@ pub struct Variant {
     skip_deserializing: bool,
     skip_serializing: bool,
     other: bool,
+    default: bool,
     serialize_with: Option<syn::ExprPath>,
     deserialize_with: Option<syn::ExprPath>,
     borrow: Option<syn::Meta>,
@@ -848,6 +849,7 @@ impl Variant {
         let mut ser_bound = Attr::none(cx, BOUND);
         let mut de_bound = Attr::none(cx, BOUND);
         let mut other = BoolAttr::none(cx, OTHER);
+        let mut default = BoolAttr::none(cx, DEFAULT);
         let mut serialize_with = Attr::none(cx, SERIALIZE_WITH);
         let mut deserialize_with = Attr::none(cx, DESERIALIZE_WITH);
         let mut borrow = Attr::none(cx, BORROW);
@@ -956,6 +958,11 @@ impl Variant {
                     other.set_true(word);
                 }
 
+                // Parse `#[serde(default)]`
+                Meta(Path(word)) if word == DEFAULT => {
+                    default.set_true(word);
+                }
+
                 // Parse `#[serde(bound = "T: SomeBound")]`
                 Meta(NameValue(m)) if m.path == BOUND => {
                     if let Ok(where_predicates) = parse_lit_into_where(cx, BOUND, BOUND, &m.lit) {
@@ -1046,6 +1053,7 @@ impl Variant {
             skip_deserializing: skip_deserializing.get(),
             skip_serializing: skip_serializing.get(),
             other: other.get(),
+            default: default.get(),
             serialize_with: serialize_with.get(),
             deserialize_with: deserialize_with.get(),
             borrow: borrow.get(),
@@ -1091,6 +1099,10 @@ impl Variant {
 
     pub fn other(&self) -> bool {
         self.other
+    }
+
+    pub fn default(&self) -> bool {
+        self.default
     }
 
     pub fn serialize_with(&self) -> Option<&syn::ExprPath> {

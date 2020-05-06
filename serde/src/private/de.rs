@@ -817,7 +817,7 @@ mod content {
     ///
     /// Not public API.
     pub struct TaggedContent<'de, T> {
-        pub tag: T,
+        pub tag: Option<T>,
         pub content: Content<'de>,
     }
 
@@ -869,7 +869,7 @@ mod content {
             S: SeqAccess<'de>,
         {
             let tag = match try!(seq.next_element()) {
-                Some(tag) => tag,
+                Some(tag) => Some(tag),
                 None => {
                     return Err(de::Error::missing_field(self.tag_name));
                 }
@@ -901,13 +901,10 @@ mod content {
                     }
                 }
             }
-            match tag {
-                None => Err(de::Error::missing_field(self.tag_name)),
-                Some(tag) => Ok(TaggedContent {
-                    tag: tag,
-                    content: Content::Map(vec),
-                }),
-            }
+            Ok(TaggedContent {
+                tag: tag,
+                content: Content::Map(vec),
+            })
         }
     }
 

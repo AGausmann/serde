@@ -1292,6 +1292,12 @@ fn deserialize_internally_tagged_enum(
         .map(|(i, variant)| {
             let variant_name = field_i(i);
 
+            let pattern = if variant.attrs.default() {
+                quote! { _serde::export::Some(__Field::#variant_name) | _serde::export::None }
+            } else {
+                quote! { _serde::export::Some(__Field::#variant_name) }
+            };
+
             let block = Match(deserialize_internally_tagged_variant(
                 params,
                 variant,
@@ -1302,7 +1308,7 @@ fn deserialize_internally_tagged_enum(
             ));
 
             quote! {
-                __Field::#variant_name => #block
+                #pattern => #block
             }
         });
 
@@ -1317,6 +1323,8 @@ fn deserialize_internally_tagged_enum(
 
         match __tagged.tag {
             #(#variant_arms)*
+            #[allow(unreachable_patterns)]
+            _serde::export::None => _serde::export::Err(_serde::de::Error::missing_field(#tag)),
         }
     }
 }
